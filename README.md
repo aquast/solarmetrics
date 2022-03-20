@@ -31,9 +31,12 @@ So let's start
  1. InfluxDB
  2. Telegraf
  3. Grafana
+ 4. USB-Driver the CC-USB-RS485-150U PC Communication Cable - if used
 
 
 ## Installation
+
+### InfluxDB, telegraf
 
 InfluxDB and telegraf are both open source software under MIT license. The software is released and maintained by influxdata. Both, telegraf and influxDB can be acquired and updated by adding the influx repository to your Raspberry repository manager.
 
@@ -46,6 +49,30 @@ Now telegraf and influxDB should be installable and missing dependency should be
     pi@raspi/> sudo apt update
     pi@raspi/> sudo apt install telegraf
     pi@raspi/> sudo apt install influxdb
+
+
+### USB-Driver for CC-USB-RS485-150U PC Communication Cable
+
+Since the Communication Cable doesn't work with the default cdc-acm driver we have to replace the this driver 
+
+Download and install driver for CC-USB-RS485-150U PC Communication Cable
+
+    git clone https://github.com/kasbert/epsolar-tracer.git
+
+The Kasbert Driver was the only driver I found able to running with the CC-USB-RS485-150U PC Communication Cable. Unfortunately make, install doesn't worked for me. I used the [suggested](https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a) alternative way of installation via dkms:
+
+    pi@raspi/> sudo apt install dkms
+    pi@raspi/> sudo su
+    root@raspi# cp -a ../xr_usb_serial_common-1a /usr/src/
+	root@raspi# dkms add -m xr_usb_serial_common -v 1a
+	root@raspi# dkms build -m xr_usb_serial_common -v 1a
+	root@raspi# dkms install -m xr_usb_serial_common -v 1a
+
+Ensure that the cdc-acm module is not loaded:
+
+	root@raspi# echo blacklist cdc-acm > /etc/modprobe.d/blacklist-cdc-acm.conf 
+	root@raspi# update-initramfs -u
+
 
 ## Configuration
 
@@ -146,6 +173,12 @@ Tp prevent you from writing wrong data to influxdb you can check the configurati
     root@raspi# telegraf -config /etc/telegraf/telegraf.d/xtra.conf -test -debug
 
 You will get an text output to stdout which lists the transformed results from modbus, if running either.
+
+## Sources
+
+1. [https://www.secretisland.de/raspberry-pi-als-powermeter/](https://www.secretisland.de/raspberry-pi-als-powermeter/)
+2. [https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a](https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a)
+3. [https://www.bjoerns-techblog.de/2017/05/installation-von-influxdb-telegraf-und-grafana-auf-dem-raspberry-pi-3/](https://www.bjoerns-techblog.de/2017/05/installation-von-influxdb-telegraf-und-grafana-auf-dem-raspberry-pi-3/)
 
 
 
