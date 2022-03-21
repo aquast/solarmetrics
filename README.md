@@ -1,6 +1,7 @@
 # Getting metrics from the modbus interface of the EPever solar charger
 
 ## Abstract
+
 This document gives some instructions for setting up an web based interface to the EPever solar charger XTRA and TRACER series. It should be easily adoptable to other solar chargers if they providing a modbus interface. MODBUS RJ45 to USB adapter also can be replaced with other connection solutions to the Raspberry. The telegraf software which is in task for collecting the data from the charger and send it to the influx data base has a widh range of input module configurations, with well documented examples.
 
 
@@ -17,6 +18,8 @@ One aim for providing this description for setting up a replacement for the EPev
 The two eBox types distributed by EPever. Screw holes on the right eBox represent the state of delivery.
 
 So let's start
+
+![epever-raspi-schema](image/epever-raspi-schema.png)
 
 ## Prerequisites
 
