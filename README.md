@@ -9,20 +9,20 @@ This document gives some instructions for setting up an web based interface to t
 Sketch of data processing through telegraf, influxdb and grafana
 
 
-One aim for providing this description for setting up a replacement for the EPever Hardware solutions, is to prevent you from buying the some of the EPever's additional hardware  like the eBox-WIFI-01 or eBox-BLE-01. In contrast to the solar charger, which is operating well, the eBoxes are both much to expensive for their cheapest interieur and also a reason for great security concerns.
+One aim for providing this description for setting up a replacement for the EPever Hardware solutions, is to prevent you from buying  some of the EPever's additional hardware like the eBox-WIFI-01 or eBox-BLE-01. In contrast to the solar charger, which is operating well, the eBoxes are both much too expensive for their cheapest interieur and also a reason for great security concerns.
 
 
 ![eBoxes](image/eBoxes.jpg)
 
-The two eBox types distributed by EPever. Screw holes on the top eBox are shown in the state of delivery.
+The two eBox types distributed by EPever. Screw holes on the right eBox represent the state of delivery.
 
 So let's start
 
 ## Prerequisites
 
- 1. Raspberry 3 or Raspberry 4
+ 1. Raspberry Pi 3 or Raspberry Pi 4
  2. RaspianOS
- 3. Modbus Specification for your Solar Charger (if not EPever XTRA, TRACER Series
+ 3. Modbus Specification for your Solar Charger (if not EPever XTRA, TRACER Series)
  4. MODBUS RJ45 to USB Adapter (likewise CC-USB-RS485-150U PC Communication Cable)
  5. Specification for the MODBUS Adapter
  
@@ -53,13 +53,12 @@ Now telegraf and influxDB should be installable and missing dependency should be
 
 ### USB-Driver for CC-USB-RS485-150U PC Communication Cable
 
-Since the Communication Cable doesn't work with the default cdc-acm driver we have to replace the this driver 
-
-Download and install driver for CC-USB-RS485-150U PC Communication Cable
+Since the Communication Cable doesn't work with the default cdc-acm driver we have to replace the this driver. 
+Download and install driver for CC-USB-RS485-150U PC Communication Cable.
 
     git clone https://github.com/kasbert/epsolar-tracer.git
 
-The Kasbert Driver was the only driver I found able to running with the CC-USB-RS485-150U PC Communication Cable. Unfortunately make, install doesn't worked for me. I used the [suggested](https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a) alternative way of installation via dkms:
+The Kasbert Driver was the only driver I found feasible running with the CC-USB-RS485-150U PC Communication Cable. Unfortunately `make, install` doesn't worked for me. I used the [suggested](https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a) alternative way of installation via dkms:
 
     pi@raspi/> sudo apt install dkms
     pi@raspi/> sudo su
@@ -73,10 +72,29 @@ Ensure that the cdc-acm module is not loaded:
 	root@raspi# echo blacklist cdc-acm > /etc/modprobe.d/blacklist-cdc-acm.conf 
 	root@raspi# update-initramfs -u
 
+#### Testing connection
+
+If driver installation is completed, you should able to find a new device as one of `/dev/XRUSB0, /dev/XRUSB1, /dev/XRUSB2, /dev/XRUSB3`. If device isn't `/dev/XRUSB0` please apply device path accordingly in the telegraf.conf (see below).
+
+Connection can be tested with the console tool `mbpoll`. 
+Use the given options for CC-USB-RS485-150U PC Communication Cable for instance.
+    
+    pi@raspi/> sudo apt install mbpoll
+    pi@raspi/> sudo su
+    root@raspi# mbpoll -h # to list options 
+    root@raspi# mbpoll -m rtu -a 1 -c 1 -t 0 -b 115200 -o 2 -l 3000 -P none /dev/ttyXRUSB0
+
+#### Mind the gap!
+If the kernel updated, you have to recompile the module manually in case of a reboot. This can be done with
+
+    pi@raspi/> sudo su
+	root@raspi# dkms add -m xr_usb_serial_common -v 1a
+	root@raspi# dkms build -m xr_usb_serial_common -v 1a
+	root@raspi# dkms install -m xr_usb_serial_common -v 1a
 
 ## Configuration
 
-Start and enable influxdb
+### Start and enable influxdb
 
     pi@raspi/> sudo systemctl enable influxdb
     pi@raspi/> sudo systemctl start influxdb
@@ -90,14 +108,17 @@ Create new database and user in influxdb and grant manipulation to new user
     > exit
     root@raspi# exit
 
-<u>IMPORTANT</u> exit command in influx only works without semikolon
+#### Mind the gap!
 
-Start and enable telegraf
+`exit`-command in influx only works without semikolon!
+
+## Start and enable telegraf
 
     pi@raspi/> sudo systemctl enable telegraf
     pi@raspi/> sudo systemctl start telegraf
 
-<u>IMPORTANT</u>
+#### Mind the gap!
+
 telegraf runs on its own user telegraf. ;-)  After installation the telegraf user has not sufficiant rights for starting telegraf on system boot. Therefore you HAVE TO put the telegraf user into group dialout via
 
     pi@raspi/> sudo su
@@ -124,8 +145,6 @@ You can configure the modbus input within the telegraf.conf. A better way to use
 For instance, copy the file epever.conf provided here into your /etc/telegraf/telegraf.d/ directory.
 
 ### RTU Connection
-
-<u>IMPORTANT</u> Be aware, the correct connection data MUST be provided for some of the MODBUS RJ45 to USB Adapters (especially the "CC-USB-RS485-150U PC Communication Cable"). As an low power item the cable need 2 seconds timeout for instance.
 
     [[inputs.modbus]]
       ## Connection Configuration
@@ -163,7 +182,9 @@ For instance, copy the file epever.conf provided here into your /etc/telegraf/te
       ## For Serial you can choose between "RTU" and "ASCII"
       transmission_mode = "RTU"
 
+#### Mind the gap!
 
+Be aware, the correct connection data MUST be provided for some of the MODBUS RJ45 to USB Adapters (especially the "CC-USB-RS485-150U PC Communication Cable"). As an low power item the cable need 2 seconds timeout for instance.
 
 ### Check the telegraf configuration without writing something into influxdb
 
@@ -179,6 +200,7 @@ You will get an text output to stdout which lists the transformed results from m
 1. [https://www.secretisland.de/raspberry-pi-als-powermeter/](https://www.secretisland.de/raspberry-pi-als-powermeter/)
 2. [https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a](https://github.com/kasbert/epsolar-tracer/tree/master/xr_usb_serial_common-1a)
 3. [https://www.bjoerns-techblog.de/2017/05/installation-von-influxdb-telegraf-und-grafana-auf-dem-raspberry-pi-3/](https://www.bjoerns-techblog.de/2017/05/installation-von-influxdb-telegraf-und-grafana-auf-dem-raspberry-pi-3/)
+4. [https://forums.opensuse.org/showthread.php/531256-How-to-access-USB-Serial-devices](https://forums.opensuse.org/showthread.php/531256-How-to-access-USB-Serial-devices)
 
 
 
