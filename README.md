@@ -24,7 +24,7 @@ So let's start
 ## Prerequisites
 
  1. Raspberry Pi 3 or Raspberry Pi 4
- 2. RaspianOS
+ 2. RaspianOS **This works with current legacy version (based on debian buster) only, the epsolar-tracer software does not compile with debian bullseye)** 
  3. Modbus Specification for your Solar Charger (if not EPever XTRA, TRACER Series)
  4. MODBUS RJ45 to USB Adapter (likewise CC-USB-RS485-150U PC Communication Cable)
  5. Specification for the MODBUS Adapter
@@ -43,7 +43,7 @@ So let's start
 
 InfluxDB and telegraf are both open source software under MIT license. The software is released and maintained by influxdata. Both, telegraf and influxDB can be acquired and updated by adding the influx repository to your Raspberry repository manager.
 
-    pi@raspi/> export DISTRIB_ID=$(lsb_release -si); export DISTRIB_CODENAME=$(lsb_release -sc)
+    pi@raspi/> export DISTRIB_ID=debian; export DISTRIB_CODENAME=$(lsb_release -sc)
     pi@raspi/> curl -s https://repos.influxdata.com/influxdb.key | gpg --dearmor > /etc/apt/trusted.gpg.d/influxdb.gpg
     pi@raspi/> echo "deb [signed-by=/etc/apt/trusted.gpg.d/influxdb.gpg] https://repos.influxdata.com/${DISTRIB_ID,,} ${DISTRIB_CODENAME} stable" > /etc/apt/sources.list.d/influxdb.list
 
@@ -77,7 +77,7 @@ Ensure that the cdc-acm module is not loaded:
 
 #### Testing connection
 
-If driver installation is completed, you should able to find a new device as one of `/dev/XRUSB0, /dev/XRUSB1, /dev/XRUSB2, /dev/XRUSB3`. If device isn't `/dev/XRUSB0` please apply device path accordingly in the telegraf.conf (see below).
+If driver installation is completed, you should able to find a new device as one of `/dev/ttyXRUSB0, /dev/ttyXRUSB1, /dev/ttyXRUSB2, /dev/ttyXRUSB3`. If device isn't `/dev/ttyXRUSB0` please apply device path accordingly in the telegraf.conf (see below).
 
 Connection can be tested with the console tool `mbpoll`. 
 Use the given options for CC-USB-RS485-150U PC Communication Cable for instance.
