@@ -34,7 +34,7 @@ So let's start
  1. InfluxDB
  2. Telegraf
  3. Grafana
- 4. USB-Driver the CC-USB-RS485-150U PC Communication Cable - if used
+ 4. USB-Driver for the CC-USB-RS485-150U PC Communication Cable - if used
 
 
 ## Installation
